@@ -15,8 +15,8 @@ config.font = wezterm.font_with_fallback {
 config.font_size = 11.0
 config.color_scheme = 'Catppuccin Mocha'
 
-config.window_background_opacity = 0.95
-config.win32_system_backdrop = 'Acrylic'
+config.window_background_opacity = 1.0
+config.win32_system_backdrop = 'Disable'
 
 config.front_end = 'OpenGL'
 config.max_fps = 60
@@ -26,7 +26,7 @@ config.default_cursor_style = 'BlinkingBar'
 
 config.tab_bar_at_bottom = true
 config.use_fancy_tab_bar = false
-config.window_padding = { left = 4, right = 4, top = 4, bottom = 4 }
+config.window_padding = { left = 0, right = 0, top = 0, bottom = 0 }
 
 config.keys = {
   { key = 't', mods = 'CTRL|SHIFT', action = wezterm.action.SpawnCommandInNewTab {
