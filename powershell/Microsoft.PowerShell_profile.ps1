@@ -6,7 +6,7 @@ oh-my-posh init pwsh --config "$env:USERPROFILE\.poshthemes\catppuccin_mocha.omp
 Import-Module PSReadLine
 Set-PSReadLineOption -EditMode Windows
 Set-PSReadLineOption -PredictionSource History
-Set-PSReadLineOption -PredictionViewStyle ListView
+Set-PSReadLineOption -PredictionViewStyle Inline
 Set-PSReadLineOption -HistorySearchCursorMovesToEnd
 Set-PSReadLineKeyHandler -Key Tab -ScriptBlock {
     $line = $null
@@ -15,7 +15,7 @@ Set-PSReadLineKeyHandler -Key Tab -ScriptBlock {
     if ([string]::IsNullOrWhiteSpace($line)) {
         [Microsoft.PowerShell.PSConsoleReadLine]::HistorySearchForward()
     } else {
-        [Microsoft.PowerShell.PSConsoleReadLine]::MenuComplete()
+        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptSuggestion()
     }
 }
 Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
