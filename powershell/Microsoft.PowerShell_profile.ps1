@@ -22,6 +22,17 @@ Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
 Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
 Set-PSReadLineKeyHandler -Key Ctrl+z -Function Undo
 Set-PSReadLineKeyHandler -Key Ctrl+d -Function DeleteCharOrExit
+Set-PSReadLineKeyHandler -Key Ctrl+e -ScriptBlock {
+    $current = (Get-PSReadLineOption).PredictionViewStyle
+    if ($current -eq 'Inline') {
+        Set-PSReadLineOption -PredictionViewStyle ListView
+        Write-Host "`nVista: Lista" -ForegroundColor Yellow
+    } else {
+        Set-PSReadLineOption -PredictionViewStyle Inline
+        Write-Host "`nVista: Inline" -ForegroundColor Yellow
+    }
+    [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
+}
 
 # Terminal-Icons - iconos en ls
 Import-Module Terminal-Icons
