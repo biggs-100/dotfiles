@@ -75,8 +75,31 @@ Set-PSReadLineKeyHandler -Key RightArrow -Function ForwardWord
 Set-PSReadLineKeyHandler -Key Alt+RightArrow -Function ForwardWord
 Set-PSReadLineKeyHandler -Key End -Function EndOfLine
 
-# Tab completion
-Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+# Tab completion — Fish-style (smart prefix + menu on second tab)
+Set-PSReadLineKeyHandler -Key Tab -BriefDescription "FishTabComplete" -LongDescription "Tab completo inteligente estilo Fish" -ScriptBlock {
+    $line = $null
+    $cursor = 0
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+
+    # Si la linea esta vacia, buscar en historial
+    if ([string]::IsNullOrWhiteSpace($line)) {
+        [Microsoft.PowerShell.PSConsoleReadLine]::HistorySearchForward()
+        return
+    }
+
+    # Intentar completar
+    $completions = $null
+    $completionCount = 0
+    try {
+        [Microsoft.PowerShell.PSConsoleReadLine]::Complete([ref]$completions, [ref]$completionCount)
+    } catch {}
+
+    # Si hay una sola opcion, ya se completo
+    # Si hay varias, mostrar menu en la segunda Tab
+    if ($completionCount -gt 1) {
+        [Microsoft.PowerShell.PSConsoleReadLine]::MenuComplete()
+    }
+}
 Set-PSReadLineKeyHandler -Key Shift+Tab -Function TabCompletePrevious
 
 # Fish keybindings
