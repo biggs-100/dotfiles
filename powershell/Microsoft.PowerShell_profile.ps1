@@ -1,49 +1,123 @@
-# Oh My Posh
+# ============================================================
+# PowerShell 7 Profile — Catppuccin Mocha + Fish Style
+# ============================================================
+
+# --- oh-my-posh (Catppuccin Mocha theme) ---
 $env:PATH += ";$env:LOCALAPPDATA\Microsoft\WindowsApps"
 oh-my-posh init pwsh --config "$env:USERPROFILE\.poshthemes\catppuccin_mocha.omp.json" | Invoke-Expression
 
-# PSReadLine - autocompletado y historial
+# --- Modules ---
 Import-Module PSReadLine
-Set-PSReadLineOption -EditMode Windows
+Import-Module posh-git
+Import-Module Terminal-Icons
+Import-Module ZLocation
+
+# ============================================================
+# PSReadLine — Fish-style suggestions & completion
+# ============================================================
+Set-PSReadLineOption -EditMode Emacs
 Set-PSReadLineOption -PredictionSource History
-Set-PSReadLineOption -PredictionViewStyle Inline
+Set-PSReadLineOption -PredictionViewStyle InlineView
+Set-PSReadLineOption -HistorySaveStyle SaveIncrementally
+Set-PSReadLineOption -HistoryNoDuplicates
+Set-PSReadLineOption -MaximumHistoryCount 50000
 Set-PSReadLineOption -HistorySearchCursorMovesToEnd
-Set-PSReadLineKeyHandler -Key Tab -ScriptBlock {
-    $line = $null
-    $cursor = 0
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
-    if ([string]::IsNullOrWhiteSpace($line)) {
-        [Microsoft.PowerShell.PSConsoleReadLine]::HistorySearchForward()
-    } else {
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptSuggestion()
-    }
+Set-PSReadLineOption -CompletionQueryItems 100
+Set-PSReadLineOption -ShowToolTips
+
+# Colors (Catppuccin Mocha compatible)
+Set-PSReadLineOption -Colors @{
+    InlinePrediction = '#585b70'
+    Command          = '#89b4fa'
+    Parameter        = '#89dceb'
+    Variable         = '#cdd6f4'
+    String           = '#a6e3a1'
+    Keyword          = '#cba6f7'
+    Comment          = '#6c7086'
+    Operator         = '#94e2d5'
+    Type             = '#f9e2af'
+    Number           = '#fab387'
+    Member           = '#f5c2e7'
+    Error            = '#f38ba8'
+    Selection        = '#45475a'
+    Emphasis         = '#f9e2af'
+    Default          = '#cdd6f4'
+    ContinuationPrompt = '#585b70'
 }
+
+# History search with arrows
 Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
 Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
+Set-PSReadLineKeyHandler -Key Ctrl+r -Function ReverseSearchHistory
+
+# Accept suggestions
+Set-PSReadLineKeyHandler -Key RightArrow -Function ForwardWord
+Set-PSReadLineKeyHandler -Key Alt+RightArrow -Function ForwardWord
+Set-PSReadLineKeyHandler -Key End -Function EndOfLine
+
+# Tab completion
+Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+Set-PSReadLineKeyHandler -Key Shift+Tab -Function TabCompletePrevious
+
+# Fish keybindings
+Set-PSReadLineKeyHandler -Key Ctrl+a -Function BeginningOfLine
+Set-PSReadLineKeyHandler -Key Ctrl+e -Function EndOfLine
+Set-PSReadLineKeyHandler -Key Ctrl+d -Function ViExit
+Set-PSReadLineKeyHandler -Key Ctrl+l -Function ClearScreen
+Set-PSReadLineKeyHandler -Key Ctrl+k -Function KillLine
+Set-PSReadLineKeyHandler -Key Ctrl+u -Function BackwardKillLine
+Set-PSReadLineKeyHandler -Key Ctrl+w -Function BackwardKillWord
+Set-PSReadLineKeyHandler -Key Alt+d -Function KillWord
+Set-PSReadLineKeyHandler -Key Ctrl+y -Function Yank
 Set-PSReadLineKeyHandler -Key Ctrl+z -Function Undo
-Set-PSReadLineKeyHandler -Key Ctrl+d -Function DeleteCharOrExit
+Set-PSReadLineKeyHandler -Key Ctrl+Shift+z -Function Redo
+
+# Toggle prediction view style
 Set-PSReadLineKeyHandler -Key Ctrl+e -ScriptBlock {
     $current = (Get-PSReadLineOption).PredictionViewStyle
-    if ($current -eq 'Inline') {
+    if ($current -eq 'InlineView') {
         Set-PSReadLineOption -PredictionViewStyle ListView
         Write-Host "`nVista: Lista" -ForegroundColor Yellow
     } else {
-        Set-PSReadLineOption -PredictionViewStyle Inline
+        Set-PSReadLineOption -PredictionViewStyle InlineView
         Write-Host "`nVista: Inline" -ForegroundColor Yellow
     }
     [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
 }
 
-# Terminal-Icons - iconos en ls
-Import-Module Terminal-Icons
+# ============================================================
+# Completions — git, docker, npm
+# ============================================================
+Register-ArgumentCompleter -Native -CommandName git -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $cursorPosition)
+    $cmds = @('add','bisect','branch','checkout','cherry-pick','clean','clone','commit','diff','fetch','grep','init','log','merge','mv','pull','push','rebase','reflog','remote','reset','restore','rm','show','stash','status','submodule','switch','tag','worktree')
+    $w = $wordToComplete -replace '^-',''
+    $cmds | Where-Object { $_ -like "$w*" } | ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "git $_")
+    }
+}
 
-# posh-git - info de git
-Import-Module posh-git
+Register-ArgumentCompleter -Native -CommandName docker -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $cursorPosition)
+    $cmds = @('attach','build','commit','cp','create','diff','events','exec','export','history','images','import','info','inspect','kill','load','login','logs','pause','port','ps','pull','push','rename','restart','rm','rmi','run','save','search','start','stats','stop','tag','top','unpause','update','version','volume','wait')
+    $w = $wordToComplete -replace '^-',''
+    $cmds | Where-Object { $_ -like "$w*" } | ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "docker $_")
+    }
+}
 
-# ZLocation - navegacion rapida (z nombre_carpeta)
-Import-Module ZLocation
+Register-ArgumentCompleter -Native -CommandName npm -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $cursorPosition)
+    $cmds = @('access','audit','bin','bugs','cache','ci','config','dedupe','deprecate','diff','dist-tag','docs','doctor','edit','exec','explore','fund','help','init','install','link','login','ls','org','outdated','owner','pack','ping','pkg','prefix','profile','prune','publish','query','rebuild','repo','restart','root','run-script','search','set','star','start','stop','team','test','token','uninstall','update','version','view','whoami')
+    $w = $wordToComplete -replace '^-',''
+    $cmds | Where-Object { $_ -like "$w*" } | ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "npm $_")
+    }
+}
 
-# Historial por directorio (estilo Fish)
+# ============================================================
+# Directory history (Fish-style)
+# ============================================================
 $DirHistoryFile = "$env:USERPROFILE\.dir_history.json"
 
 function Save-DirHistory {
@@ -74,30 +148,7 @@ function Get-DirHistory {
     return @()
 }
 
-# Predictor personalizado por directorio
-$script:DirPredictor = {
-    param([string]$input, [System.Management.Automation.CommandAst]$ast, [ref]$cursorColumn)
-    $cmds = Get-DirHistory
-    $results = @()
-    foreach ($cmd in $cmds) {
-        if ($cmd -like "$input*") {
-            $results += [PSCustomObject]@{
-                CompletionText = $cmd
-                ListItemText = $cmd
-                ResultType = 2
-                ToolTip = "Historial de este directorio"
-            }
-        }
-    }
-    return $results
-}
-
-# Hook para guardar comandos en historial por directorio
-$script:OriginalExecuteCommand = $function:Global:Prompt
-Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
-    # cleanup
-} -ErrorAction SilentlyContinue | Out-Null
-
+# Hook to save commands to directory history
 Set-PSReadLineOption -AddToHistoryHandler {
     param([string]$line)
     Save-DirHistory $line
@@ -108,7 +159,6 @@ Set-PSReadLineOption -AddToHistoryHandler {
     return $true
 }
 
-# Funcion para mostrar historial del directorio actual
 function dir-history {
     $cmds = Get-DirHistory
     if ($cmds.Count -eq 0) {
@@ -120,14 +170,18 @@ function dir-history {
     Write-Host ""
 }
 
-# Abreviaturas
+# ============================================================
+# Aliases
+# ============================================================
 Set-Alias -Name g -Value git
 Set-Alias -Name ll -Value Get-ChildItem
 Set-Alias -Name la -Value Get-ChildItem
 Set-Alias -Name grep -Value Select-String
 Set-Alias -Name touch -Value New-Item
 
-# Funciones utiles
+# ============================================================
+# Utility functions
+# ============================================================
 function .. { Set-Location .. }
 function ... { Set-Location ../.. }
 function .... { Set-Location ../../.. }
@@ -135,5 +189,7 @@ function mkcd { param($path) New-Item -ItemType Directory -Path $path -Force | S
 function Get-MyIP { (Invoke-WebRequest -Uri "https://api.ipify.org" -UseBasicParsing).Content }
 function reload { . $PROFILE }
 
-# PATH adicional
+# ============================================================
+# PATH
+# ============================================================
 $env:PATH += ";C:\Program Files\WezTerm;C:\msys64\usr\bin"
