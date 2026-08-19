@@ -72,8 +72,8 @@ Set-PSReadLineKeyHandler -Key RightArrow -Function ForwardWord
 Set-PSReadLineKeyHandler -Key Alt+RightArrow -Function ForwardWord
 Set-PSReadLineKeyHandler -Key End -Function EndOfLine
 
-# Tab completion — Fish-style (smart prefix + menu on second tab)
-Set-PSReadLineKeyHandler -Key Tab -BriefDescription "FishTabComplete" -LongDescription "Tab completo inteligente estilo Fish" -ScriptBlock {
+# Tab completion — Fish-style (accept suggestion OR complete)
+Set-PSReadLineKeyHandler -Key Tab -BriefDescription "FishTabComplete" -LongDescription "Tab acepta sugerencia o completa" -ScriptBlock {
     $line = $null
     $cursor = 0
     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
@@ -84,15 +84,22 @@ Set-PSReadLineKeyHandler -Key Tab -BriefDescription "FishTabComplete" -LongDescr
         return
     }
 
-    # Intentar completar
+    # Si hay sugerencia inline (texto gris subrayado), aceptarla toda
+    $predictions = $null
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$null, [ref]$null, [ref]$predictions, [ref]$null)
+    if ($predictions -and $predictions.Count -gt 0 -and $cursor -eq $line.Length) {
+        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptSuggestion()
+        return
+    }
+
+    # Si no hay sugerencia, completar normalmente
     $completions = $null
     $completionCount = 0
     try {
         [Microsoft.PowerShell.PSConsoleReadLine]::Complete([ref]$completions, [ref]$completionCount)
     } catch {}
 
-    # Si hay una sola opcion, ya se completo
-    # Si hay varias, mostrar menu en la segunda Tab
+    # Si hay varias opciones, mostrar menu
     if ($completionCount -gt 1) {
         [Microsoft.PowerShell.PSConsoleReadLine]::MenuComplete()
     }
