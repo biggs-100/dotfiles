@@ -71,12 +71,12 @@ $weztermDir = "$env:USERPROFILE"
 Copy-Item "$dotfilesDir\wezterm\.wezterm.lua" "$weztermDir\.wezterm.lua" -Force
 Write-Host "  WezTerm configurado" -ForegroundColor Green
 
-# --- 6. Copiar tema de Oh My Posh ---
-Write-Host "`n[6/6] Copiando tema de Oh My Posh..." -ForegroundColor Yellow
-$themesDir = "$env:USERPROFILE\.config"
-if (-not (Test-Path $themesDir)) { New-Item -ItemType Directory -Path $themesDir -Force | Out-Null }
-Copy-Item "$dotfilesDir\poshthemes\*.toml" $themesDir -Force
-Write-Host "  Tema copiado" -ForegroundColor Green
+# --- 6. Copiar configuracion de Starship ---
+Write-Host "`n[6/6] Configurando Starship..." -ForegroundColor Yellow
+$starshipConfigDir = "$env:USERPROFILE\.config"
+if (-not (Test-Path $starshipConfigDir)) { New-Item -ItemType Directory -Path $starshipConfigDir -Force | Out-Null }
+Copy-Item "$dotfilesDir\starship\starship.toml" "$starshipConfigDir\starship.toml" -Force
+Write-Host "  Starship configurado" -ForegroundColor Green
 
 # --- Listo ---
 Write-Host "`n=== Instalacion completa ===" -ForegroundColor Green
