@@ -26,11 +26,8 @@ Import-Module Terminal-Icons
 Set-Alias -Name ll -Value Get-ChildItem
 Set-Alias -Name la -Value Get-ChildItem
 
-# ZLocation: loads when you first use z
-function z {
-    if (-not (Get-Module ZLocation)) { Import-Module ZLocation -ErrorAction SilentlyContinue }
-    ZLocation @args
-}
+# ZLocation — always loaded (needed for z navigation)
+Import-Module ZLocation
 
 # ============================================================
 # PSReadLine — Fish-style suggestions & completion
