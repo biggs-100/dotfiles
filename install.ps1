@@ -3,7 +3,7 @@
 .SYNOPSIS
     Instala dotfiles (PowerShell + WezTerm)
 .DESCRIPTION
-    Instala oh-my-posh, módulos de PowerShell, fuentes Nerd Font,
+    Instala starship, módulos de PowerShell, fuentes Nerd Font,
     y configura el perfil y WezTerm.
 #>
 
@@ -12,12 +12,12 @@ $dotfilesDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Write-Host "`n=== Dotfiles Installer ===" -ForegroundColor Cyan
 
-# --- 1. Instalar oh-my-posh ---
-Write-Host "`n[1/6] Instalando oh-my-posh..." -ForegroundColor Yellow
-if (-not (Get-Command oh-my-posh -ErrorAction SilentlyContinue)) {
+# --- 1. Instalar Starship ---
+Write-Host "`n[1/6] Instalando starship..." -ForegroundColor Yellow
+if (-not (Get-Command starship -ErrorAction SilentlyContinue)) {
     Set-ExecutionPolicy Bypass -Scope Process -Force
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-    iex ((New-Object System.Net.WebClient).DownloadString('https://ohmyposh.dev/install.ps1'))
+    iex ((New-Object System.Net.WebClient).DownloadString('https://starship.rs/install.ps1'))
 } else {
     Write-Host "  ya instalado" -ForegroundColor Green
 }
@@ -73,11 +73,12 @@ Write-Host "  WezTerm configurado" -ForegroundColor Green
 
 # --- 6. Copiar tema de Oh My Posh ---
 Write-Host "`n[6/6] Copiando tema de Oh My Posh..." -ForegroundColor Yellow
-$themesDir = "$env:USERPROFILE\.poshthemes"
+$themesDir = "$env:USERPROFILE\.config"
 if (-not (Test-Path $themesDir)) { New-Item -ItemType Directory -Path $themesDir -Force | Out-Null }
-Copy-Item "$dotfilesDir\poshthemes\*.omp.json" $themesDir -Force
+Copy-Item "$dotfilesDir\poshthemes\*.toml" $themesDir -Force
 Write-Host "  Tema copiado" -ForegroundColor Green
 
 # --- Listo ---
 Write-Host "`n=== Instalacion completa ===" -ForegroundColor Green
 Write-Host "Reinicia WezTerm para aplicar los cambios.`n" -ForegroundColor Yellow
+

@@ -2,9 +2,9 @@
 # PowerShell 7 Profile — Catppuccin Mocha + Fish Style (Optimized)
 # ============================================================
 
-# --- oh-my-posh (Catppuccin Mocha theme) ---
-$env:PATH += ";$env:LOCALAPPDATA\Microsoft\WindowsApps"
-oh-my-posh init pwsh --config "$env:USERPROFILE\.poshthemes\catppuccin_mocha.omp.json" | Invoke-Expression
+# --- Starship prompt (Rust binary, ~100ms vs oh-my-posh ~800ms) ---
+$env:PATH += ";$env:LOCALAPPDATA\Microsoft\WindowsApps;$env:LOCALAPPDATA\starship"
+Invoke-Expression (& starship init powershell)
 
 # --- PSReadLine (always loaded — it's fast) ---
 Import-Module PSReadLine

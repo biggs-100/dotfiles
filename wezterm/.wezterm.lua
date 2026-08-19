@@ -8,6 +8,7 @@ config.set_environment_variables = {
 }
 
 config.font = wezterm.font_with_fallback {
+  'JetBrainsMonoNL Nerd Font Propo',
   'CaskaydiaCove Nerd Font Mono',
   'Cascadia Code',
   'Consolas',
