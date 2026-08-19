@@ -1,16 +1,43 @@
 # ============================================================
-# PowerShell 7 Profile — Catppuccin Mocha + Fish Style
+# PowerShell 7 Profile — Catppuccin Mocha + Fish Style (Optimized)
 # ============================================================
 
 # --- oh-my-posh (Catppuccin Mocha theme) ---
 $env:PATH += ";$env:LOCALAPPDATA\Microsoft\WindowsApps"
 oh-my-posh init pwsh --config "$env:USERPROFILE\.poshthemes\catppuccin_mocha.omp.json" | Invoke-Expression
 
-# --- Modules ---
+# --- PSReadLine (always loaded — it's fast) ---
 Import-Module PSReadLine
-Import-Module posh-git
-Import-Module Terminal-Icons
-Import-Module ZLocation
+
+# --- Lazy-load modules (load on first use) ---
+# posh-git: loads when you first run git
+Register-ArgumentCompleter -Native -CommandName git -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $cursorPosition)
+    if (-not (Get-Module posh-git)) { Import-Module posh-git -ErrorAction SilentlyContinue }
+    $cmds = @('add','bisect','branch','checkout','cherry-pick','clean','clone','commit','diff','fetch','grep','init','log','merge','mv','pull','push','rebase','reflog','remote','reset','restore','rm','show','stash','status','submodule','switch','tag','worktree')
+    $w = $wordToComplete -replace '^-',''
+    $cmds | Where-Object { $_ -like "$w*" } | ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "git $_")
+    }
+}
+
+# Terminal-Icons: loads when you first run ls/ll
+$script:TerminalIconsLoaded = $false
+function ls {
+    if (-not $script:TerminalIconsLoaded) {
+        Import-Module Terminal-Icons -ErrorAction SilentlyContinue
+        $script:TerminalIconsLoaded = $true
+    }
+    Get-ChildItem @args
+}
+Set-Alias -Name ll -Value ls
+Set-Alias -Name la -Value ls
+
+# ZLocation: loads when you first use z
+function z {
+    if (-not (Get-Module ZLocation)) { Import-Module ZLocation -ErrorAction SilentlyContinue }
+    ZLocation @args
+}
 
 # ============================================================
 # PSReadLine — Fish-style suggestions & completion
@@ -86,17 +113,8 @@ Set-PSReadLineKeyHandler -Key Ctrl+e -ScriptBlock {
 }
 
 # ============================================================
-# Completions — git, docker, npm
+# Docker & npm completions
 # ============================================================
-Register-ArgumentCompleter -Native -CommandName git -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $cursorPosition)
-    $cmds = @('add','bisect','branch','checkout','cherry-pick','clean','clone','commit','diff','fetch','grep','init','log','merge','mv','pull','push','rebase','reflog','remote','reset','restore','rm','show','stash','status','submodule','switch','tag','worktree')
-    $w = $wordToComplete -replace '^-',''
-    $cmds | Where-Object { $_ -like "$w*" } | ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "git $_")
-    }
-}
-
 Register-ArgumentCompleter -Native -CommandName docker -ScriptBlock {
     param($commandName, $parameterName, $wordToComplete, $commandAst, $cursorPosition)
     $cmds = @('attach','build','commit','cp','create','diff','events','exec','export','history','images','import','info','inspect','kill','load','login','logs','pause','port','ps','pull','push','rename','restart','rm','rmi','run','save','search','start','stats','stop','tag','top','unpause','update','version','volume','wait')
@@ -148,7 +166,6 @@ function Get-DirHistory {
     return @()
 }
 
-# Hook to save commands to directory history
 Set-PSReadLineOption -AddToHistoryHandler {
     param([string]$line)
     Save-DirHistory $line
@@ -174,8 +191,6 @@ function dir-history {
 # Aliases
 # ============================================================
 Set-Alias -Name g -Value git
-Set-Alias -Name ll -Value Get-ChildItem
-Set-Alias -Name la -Value Get-ChildItem
 Set-Alias -Name grep -Value Select-String
 Set-Alias -Name touch -Value New-Item
 
