@@ -21,17 +21,10 @@ Register-ArgumentCompleter -Native -CommandName git -ScriptBlock {
     }
 }
 
-# Terminal-Icons: loads when you first run ls/ll
-$script:TerminalIconsLoaded = $false
-function ls {
-    if (-not $script:TerminalIconsLoaded) {
-        Import-Module Terminal-Icons -ErrorAction SilentlyContinue
-        $script:TerminalIconsLoaded = $true
-    }
-    Get-ChildItem @args
-}
-Set-Alias -Name ll -Value ls
-Set-Alias -Name la -Value ls
+# Terminal-Icons — always loaded (fast, ~100ms, needed for ls icons)
+Import-Module Terminal-Icons
+Set-Alias -Name ll -Value Get-ChildItem
+Set-Alias -Name la -Value Get-ChildItem
 
 # ZLocation: loads when you first use z
 function z {
